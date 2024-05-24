@@ -13,7 +13,7 @@ from pydantic import (
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
-
+from app.core.firebase import initialize_firebase
 
 def parse_cors(v: Any) -> list[str] | str:
     if isinstance(v, str) and not v.startswith("["):
@@ -75,6 +75,9 @@ class Settings(BaseSettings):
     # TODO: update type to EmailStr when sqlmodel supports it
     EMAILS_FROM_EMAIL: str | None = None
     EMAILS_FROM_NAME: str | None = None
+    FIREBASE_SERVICE_KEY: str | None = None
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+
 
     @model_validator(mode="after")
     def _set_default_emails_from(self) -> Self:
@@ -119,3 +122,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()  # type: ignore
+initialize_firebase(settings)
+
+# print(settings.dict())

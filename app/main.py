@@ -5,6 +5,9 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+from fastapi import Request
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -33,3 +36,11 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.exception_handler(500)
+async def internal_exception_handler(request: Request, exc: Exception):
+  return JSONResponse(status_code=500, content=jsonable_encoder({"detail": "Internal Server Error"}))
+
+@app.exception_handler(404)
+async def not_found_exception_handler(request: Request, exc: Exception):
+  return JSONResponse(status_code=404, content=jsonable_encoder({"detail": "Not Found"}))

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Firebase Auth Token Generator</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMrrCWc03HlEJ_AwTp1hCnfJg-R83_fZc",
+            authDomain: "compassion-ly-app.firebaseapp.com",
+            projectId: "compassion-ly-app",
+            storageBucket: "compassion-ly-app.appspot.com",
+            messagingSenderId: "223463197253",
+            appId: "1:223463197253:web:0dc8aa811e8819b262b12c",
+            measurementId: "G-RKDE5W5HWX"
+          };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.getAuth(app);
+
+        function signIn() {
+            firebase.signInWithEmailAndPassword(auth, "zidanutomo@gmail.com", "afatigano8")
+                .then((userCredential) => {
+                    // Signed in 
+                    userCredential.user.getIdToken().then(token => {
+                        console.log(token); // Use this token in Postman
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }
+    </script>
+</head>
+<body>
+    <button onclick="signIn()">Sign In and Get Token</button>
+</body>
+</html>
