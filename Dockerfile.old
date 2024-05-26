@@ -1,0 +1,21 @@
+FROM python:3.10
+
+# python output i.e. the stdout and stderr streams are sent straight to terminal (e.g. your container log) without being first buffered
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 
+
+RUN pip install poetry
+RUN poetry config virtualenvs.create false
+# copy pyproject.toml and poetry.lock to cache dependencies
+COPY pyproject.toml poetry.lock* /code/
+RUN poetry install --no-dev
+
+WORKDIR /code
+
+COPY ./requirements.txt /code/requirements.txt
+
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+COPY ./app /code/app
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]

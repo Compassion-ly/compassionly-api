@@ -30,8 +30,10 @@ class UserRegister(SQLModel):
 
 # TODO replace email str with EmailStr when sqlmodel supports it
 class UserUpdateMe(SQLModel):
-    full_name: str | None = None
-    email: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    phone_number: str | None = None
+    user_schools_id: int | None = None
 
 
 class UpdatePassword(SQLModel):
@@ -54,6 +56,21 @@ class User(SQLModel, table=True):
     gender: str | None = None
     user_schools_id: int | None = None
     # items: list["Item"] = Relationship(back_populates="owner")
+
+class School(SQLModel, table=True):
+    __tablename__ = "schools"
+    id: int | None = Field(default=None, primary_key=True)
+    npsn: str = None
+    school_name: str = None
+    school_province: str = None
+    school_city: str = None
+
+class UserSchool(SQLModel, table=True):
+    __tablename__ = "user_schools"
+    id: int | None = Field(default=None, primary_key=True)
+    school_id: int = None
+    school_name: str = None
+    school_major: str = None
 
 # Properties to return via API, id is always required
 # class UserPublic(UserBase):
