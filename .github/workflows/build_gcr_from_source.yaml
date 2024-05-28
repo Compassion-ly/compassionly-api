@@ -8,7 +8,7 @@ env:
   PROJECT_ID: compassion-ly-app
   SERVICE: compassion-ly-test-cicd
   REGION: asia-southeast2
-  TAGS: 1.0.0
+  TAGS: 2.0.0
   IMAGE_FOLDER: backend
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
 
       - name: 'Setup Servie Account'
         run: |
-          gcloud storage cp gs://app-main-storage/serviceAccountKey.json .
+          gcloud storage cp "${{ secrets.SA_FB }}" .
     
       - name: 'Create .env & serviceAccountKey.json file'
         run: |
