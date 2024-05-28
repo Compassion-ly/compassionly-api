@@ -1,0 +1,69 @@
+name: Deploy to Cloud Run from Source
+
+on:
+  push:
+    branches: [ "verify-ci-cd" ]
+
+env:
+  PROJECT_ID: compassion-ly-app
+  SERVICE: compassion-ly-test-cicd
+  REGION: asia-southeast2
+  TAGS: 1.0.0
+  IMAGE_FOLDER: backend
+
+jobs:
+  deploy:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+
+      - name: 'Setup Servie Account'
+        run: |
+          gcloud storage cp gs://app-main-storage/serviceAccountKey.json .
+    
+      - name: 'Create .env & serviceAccountKey.json file'
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > $GITHUB_WORKSPACE/.env
+
+      - name: 'Ensure .env file exists'
+        run: |
+          ls -la $GITHUB_WORKSPACE/.env
+          ls -la $GITHUB_WORKSPACE/serviceAccountKey.json
+
+      - name: 'Delete .gitignore'
+        run: |
+          rm .gitignore
+
+      - name: 'Trigger Cloud Build'
+        run: |
+          gcloud builds submit --tag ${{env.REGION}}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.IMAGE_FOLDER }}/${{ env.SERVICE }}:${{ env.TAGS }} .
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{env.REGION}}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.IMAGE_FOLDER }}/${{ env.SERVICE }}:${{ env.TAGS }}
+          flags: '--port 3000'
+          env_vars: |
+            FIREBASE_SERVICE_KEY=serviceAccountKey.json
+
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}
