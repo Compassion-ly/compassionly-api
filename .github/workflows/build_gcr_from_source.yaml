@@ -61,7 +61,7 @@ jobs:
           service: ${{ env.SERVICE }}
           region: ${{ env.REGION }}
           image: ${{env.REGION}}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.IMAGE_FOLDER }}/${{ env.SERVICE }}:${{ env.TAGS }}
-          flags: '--port 3000'
+          flags: '--port 80'
           env_vars: |
             FIREBASE_SERVICE_KEY=serviceAccountKey.json
 
