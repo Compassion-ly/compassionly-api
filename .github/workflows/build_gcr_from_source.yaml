@@ -2,13 +2,13 @@ name: Deploy to Cloud Run from Source
 
 on:
   push:
-    branches: [ "verify-ci-cd" ]
+    branches: [ "main" ]
 
 env:
   PROJECT_ID: compassion-ly-app
-  SERVICE: compassion-ly-test-cicd
+  SERVICE: compassion-ly
   REGION: asia-southeast2
-  TAGS: 2.0.0
+  TAGS: 1.0.0
   IMAGE_FOLDER: backend
 
 jobs:
