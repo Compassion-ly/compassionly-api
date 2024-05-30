@@ -33,7 +33,7 @@ FastAPI secara otomatis menghasilkan dokumentasi interaktif untuk API yang diban
 testing backend:
 
 ```console
-$ bash ./scripts/test.sh
+bash ./scripts/test.sh
 ```
 
 Kalo mau ngerun pakai Pytest, modif dan tambahin test di `./app/tests/`.
@@ -52,7 +52,7 @@ Make sure you create a "revision" of your models and that you "upgrade" your dat
 * After changing a model (for example, adding a column), inside the container, create a revision, e.g.:
 
 ```console
-$ alembic revision --autogenerate -m "Add column last_name to User model"
+alembic revision --autogenerate -m "Add column last_name to User model"
 ```
 
 * Commit to the git repository the files generated in the alembic directory.
@@ -60,7 +60,7 @@ $ alembic revision --autogenerate -m "Add column last_name to User model"
 * After creating the revision, run the migration in the database (this is what will actually change the database):
 
 ```console
-$ alembic upgrade head
+alembic upgrade head
 ```
 
 If you don't want to use migrations at all, uncomment the lines in the file at `./app/core/db.py` that end in:
@@ -72,7 +72,7 @@ SQLModel.metadata.create_all(engine)
 and comment the line in the file `prestart.sh` that contains:
 
 ```console
-$ alembic upgrade head
+alembic upgrade head
 ```
 
 If you don't want to start with the default models and want to remove them / modify them, from the beginning, without having any previous revision, you can remove the revision files (`.py` Python files) under `./app/alembic/versions/`. And then create a first migration as described above.
