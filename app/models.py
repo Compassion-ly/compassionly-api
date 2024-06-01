@@ -1,6 +1,6 @@
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel
-from typing import Annotated, Any, Generic, Optional, TypeVar
+from typing import Annotated, Any, Generic, Optional, TypeVar, List
 
 T = TypeVar('T')
 
@@ -112,18 +112,21 @@ class College(SQLModel, table=True):
     college_name: str | None = Field(default=None)
     college_province: str | None = Field(default=None)
     college_city: str | None = Field(default=None)
+    details: List['CollegeDetail'] = Relationship(back_populates="college")
 
     @classmethod
     def from_db(cls, db_model):
         return cls(
             id=db_model.id,
-            college_name=db_model.college_name
+            college_name=db_model.college_name,
+            college_province=db_model.college_province,
+            college_city=db_model.college_city
         )
 
 class CollegeDetail(SQLModel, table=True):
     __tablename__ = "college_detail"
     id: int | None = Field(default=None, primary_key=True)
-    college_id: int | None = Field(default=None)
+    college_id: int | None = Field(default=None, foreign_key="college.id")
     major_id: int | None = Field(default=None)
     college: College = Relationship(back_populates="details")
 

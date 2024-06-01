@@ -1,4 +1,6 @@
+
 from typing import Any, Optional
+
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, delete, func, select
@@ -24,6 +26,7 @@ from app.models import (
     CollegeDetail,
     MajorListResponse,
     CollegeListResponse,
+    MajorListResponse
 )
 from app.utils import generate_new_account_email, send_email
 
