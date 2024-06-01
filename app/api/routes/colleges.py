@@ -1,9 +1,9 @@
 
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select
+from sqlmodel import col, delete, func, select, text
 
 from app import crud
 from app.api.deps import (
@@ -29,7 +29,7 @@ from app.models import (
     MajorListResponse
 )
 from app.utils import generate_new_account_email, send_email
-
+from sqlalchemy import or_
 router = APIRouter()
 
 
@@ -61,9 +61,12 @@ def list_college_majors(session: SessionDep, current_user: CurrentUser, search_q
     """
     query = select(Major)
     if search_query:
-        query = query.where(Major.major_name.ilike(f"%{search_query}%"))
-        # or description.ilike(f"%{search_query}%")
-        query = query.where(Major.description.ilike(f"%{search_query}%"), "OR")
+        query = query.where(
+            or_(
+                Major.major_name.ilike(f"%{search_query}%"),
+                Major.major_definition.ilike(f"%{search_query}%")
+            )
+        )
     majors = session.exec(query).all()
     return MajorListResponse(data=majors, message="Majors retrieved successfully")
 
