@@ -6,7 +6,7 @@ on:
 
 env:
   PROJECT_ID: compassion-ly-app
-  SERVICE: compassion-ly-api
+  SERVICE: compassionly-api
   REGION: asia-southeast2
   TAGS: 1.0.0
   IMAGE_FOLDER: backend
