@@ -55,6 +55,7 @@ class User(SQLModel, table=True):
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
+    # gender is enum of "male" and 
     gender: str | None = None
     school_id: int | None = None
     school_major_id: int | None = None
@@ -236,8 +237,8 @@ class MajorCourse(SQLModel, table=True):
 
 ### DETAIL MODEL ###
 class UserSchoolDetail(BaseModel):
-    school: School
-    school_major: SchoolMajor
+    school: School | None = None
+    school_major: SchoolMajor | None = None
     user: User
 
 

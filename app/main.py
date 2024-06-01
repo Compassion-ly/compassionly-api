@@ -39,8 +39,11 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.exception_handler(500)
 async def internal_exception_handler(request: Request, exc: Exception):
-  return JSONResponse(status_code=500, content=jsonable_encoder({"message": "Internal Server Error", "detail": str(exc)}))
+    return JSONResponse(status_code=500, content=jsonable_encoder({"message": "Internal Server Error", "detail": str(exc)}))
 
 @app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc: Exception):
-  return JSONResponse(status_code=404, content=jsonable_encoder({"message": "Not Found", "detail": str(exc)}))
+    # if detail is empty, handle with this message, otherwise return the detail
+    if not exc.detail:
+        return JSONResponse(status_code=404, content=jsonable_encoder({"message": "Not Found"}))
+    return JSONResponse(status_code=404, content=jsonable_encoder({"message": "Not Found", "detail": str(exc)}))

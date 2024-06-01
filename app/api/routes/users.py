@@ -60,17 +60,18 @@ def read_user_me(session: SessionDep, current_user: CurrentUser) -> UserSchoolDe
     school_id = current_user.school_id
     
     current_user = session.exec(select(User).where(User.id == user_id)).first()
+    # if have school_id, get school data
 
-    school = session.exec(select(School).where(School.id == school_id)).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="School not found")
-    
-    school_major = session.exec(select(SchoolMajor).where(SchoolMajor.id == current_user.school_major_id)).first()
+    user_school_detail = UserSchoolDetail(user=current_user)
+    if school_id is not None:
+        school = session.exec(select(School).where(School.id == school_id)).first()
+        school_major = session.exec(select(SchoolMajor).where(SchoolMajor.id == current_user.school_major_id)).first()
+        user_school_detail = UserSchoolDetail(school=School.from_db(school), school_major=SchoolMajor.from_db(school_major), user=User.from_db(current_user))
 
     # user_school_detail = UserSchoolDetail(school=school, school_major=school_major, user=current_user)
 
     # use from_db method to convert db model to pydantic model
-    user_school_detail = UserSchoolDetail(school=School.from_db(school), school_major=SchoolMajor.from_db(school_major), user=User.from_db(current_user))
+    
 
     response = UserSchoolDetailResponse(data=user_school_detail, message="User school info retrieved successfully")
 
