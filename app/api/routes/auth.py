@@ -46,7 +46,12 @@ async def login_access_token(requestToken: RequestToken, session: SessionDep) ->
     }
     user = crud.get_user_by_email(session=session, email=user_data["email"])
     if not user:
-        user = crud.create_user(session=session, user_create=user_data)
+        # create user with session
+        user.uid = uid
+        user.email = decoded_token.get("email")
+        user.is_active = True
+        session.add(user)
+        # user = crud.create_user(session=session, user_create=user_data)
     else:
         # check if uid is none, if none update uid
         if not user.uid:
