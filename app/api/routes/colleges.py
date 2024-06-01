@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, delete, func, select
@@ -22,7 +22,8 @@ from app.models import (
     MajorProspect,
     MajorCourse,
     CollegeDetail,
-    MajorListResponse
+    MajorListResponse,
+    CollegeListResponse,
 )
 from app.utils import generate_new_account_email, send_email
 
@@ -51,17 +52,21 @@ router = APIRouter()
 
 # API to list all majors
 @router.get("/list-college-majors", response_model=MajorListResponse) 
-def list_college_majors(session: SessionDep, current_user: CurrentUser) -> MajorListResponse:
+def list_college_majors(session: SessionDep, current_user: CurrentUser, search_query: Optional[str] = None) -> MajorListResponse:
     """
     List all college majors.
     """
-    majors = session.exec(select(Major)).all()
-    response = MajorListResponse(data=majors, message="Majors retrieved successfully")
-    return response
+    query = select(Major)
+    if search_query:
+        query = query.where(Major.major_name.ilike(f"%{search_query}%"))
+        # or description.ilike(f"%{search_query}%")
+        query = query.where(Major.description.ilike(f"%{search_query}%"), "OR")
+    majors = session.exec(query).all()
+    return MajorListResponse(data=majors, message="Majors retrieved successfully")
 
 # API to list all colleges that have specific major
-@router.get("/list-colleges-by-major/{major_id}", response_model=MajorListResponse)
-def list_colleges_by_major(major_id: int, session: SessionDep, current_user: CurrentUser) -> MajorListResponse:
+@router.get("/list-colleges-by-major/{major_id}", response_model=CollegeListResponse)
+def list_colleges_by_major(major_id: int, session: SessionDep, current_user: CurrentUser) -> CollegeListResponse:
     """
     List all colleges that have specific major.
     """
@@ -72,6 +77,6 @@ def list_colleges_by_major(major_id: int, session: SessionDep, current_user: Cur
         .where(CollegeDetail.major_id == major_id)
     ).all()
     
-    response = MajorListResponse(data=colleges, message="Colleges retrieved successfully")
+    response = CollegeListResponse(data=colleges, message="Colleges retrieved successfully")
     return response
 
