@@ -8,3 +8,4 @@ htmlcov
 .venv
 serviceAccountKey.json
 .env
+.idea

@@ -1,6 +1,7 @@
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel
-from typing import Annotated, Any, Generic, Optional, TypeVar
+from typing import Annotated, Any, Generic, Optional, TypeVar, List
+
 T = TypeVar('T')
 
 # generic class for response
@@ -56,6 +57,8 @@ class User(SQLModel, table=True):
     school_id: int | None = None
     school_major_id: int | None = None
 
+    # ratings: List["UserTopicRating"] = Relationship(back_populates="user")
+
     @classmethod
     def from_db(cls, db_model):
         return cls(
@@ -64,6 +67,30 @@ class User(SQLModel, table=True):
             first_name=db_model.first_name,
             last_name=db_model.last_name
         )
+    
+# user_topic_rating table
+class UserTopicRating(SQLModel, table=True):
+    __tablename__ = "user_topic_rating"
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(default=None) # = Field(foreign_key="users.id")
+    rating: str | None = Field(default=None)
+    topic_id: int | None = Field(default=None) # = Field(foreign_key="topics.id")
+
+    # user: User = Relationship(back_populates="ratings")
+    # topic: Topic = Relationship(back_populates="ratings")
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            user_id=db_model.user_id,
+            rating=db_model.rating,
+            topic_id=db_model.topic_id
+        )
+
+class UserTopicRatingCreate(UserTopicRating):
+    pass
+class UserTopicRatingRead(UserTopicRating):
+    id: int
 
 class Token(BaseModel):
     access_token: str | None = None
