@@ -1,3 +1,4 @@
+from sqlalchemy import Column, String, Text, Integer
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel
 from typing import Annotated, Any, Generic, Optional, TypeVar, List
@@ -65,37 +66,10 @@ class User(SQLModel, table=True):
             first_name=db_model.first_name,
             last_name=db_model.last_name
         )
-
-# user_topic_rating table
-class UserTopicRating(SQLModel, table=True):
-    __tablename__ = "user_topic_rating"
-    id: int | None = Field(default=None, primary_key=True)
-    user_id: int | None = Field(default=None) # = Field(foreign_key="users.id")
-    rating: str | None = Field(default=None)
-    topic_id: int | None = Field(default=None) # = Field(foreign_key="topics.id")
-
-    # user: User = Relationship(back_populates="ratings")
-    # topic: Topic = Relationship(back_populates="ratings")
-    @classmethod
-    def from_db(cls, db_model):
-        return cls(
-            id=db_model.id,
-            user_id=db_model.user_id,
-            rating=db_model.rating,
-            topic_id=db_model.topic_id
-        )
-
-class UserTopicRatingCreate(UserTopicRating):
-    pass
-class UserTopicRatingRead(UserTopicRating):
-    id: int
-
 class Token(BaseModel):
     access_token: str | None = None
     token_type: str = "bearer"
     user: User | None = None
-
-
 
 ### SQL MODEL ###
 class School(SQLModel, table=True):
@@ -125,8 +99,6 @@ class SchoolMajor(SQLModel, table=True):
             id=db_model.id,
             school_major_name=db_model.school_major_name
         )
-
-
 
 class College(SQLModel, table=True):
     __tablename__ = "college"
@@ -252,9 +224,48 @@ class MajorCourse(SQLModel, table=True):
             major_id=db_model.major_id
         )
 
+# start user_topic_rating table
+class UserTopicRating(SQLModel, table=True):
+    __tablename__ = "user_topic_rating"
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(default=None) # = Field(foreign_key="users.id")
+    rating: str | None = Field(default=None)
+    topic_id: int | None = Field(default=None) # = Field(foreign_key="topics.id")
 
+    # user: User = Relationship(back_populates="ratings")
+    # topic: Topic = Relationship(back_populates="ratings")
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            user_id=db_model.user_id,
+            rating=db_model.rating,
+            topic_id=db_model.topic_id
+        )
 
+class UserTopicRatingCreate(UserTopicRating):
+    pass
+class UserTopicRatingRead(UserTopicRating):
+    id: int
 
+# end user_topic_rating table
+
+# start topics table
+class Topic(SQLModel, table=True):
+    __tablename__ = "topics"
+    id = Column(Integer, primary_key=True)
+    topic_name = Column(String, nullable=True)  # Example: Limit to 512 characters
+    topic_category_id = Column(Integer, nullable=True)
+    short_introduction = Column(String(1000), nullable=True)  # Example: Limit to 1000 characters
+    topic_image = Column(String(512), nullable=True)  # Example: Limit to 512 characters
+    topic_image2 = Column(String, nullable=True)  # Example: Limit to 512 characters
+    topic_explanation = Column(Text, nullable=True)
+
+class TopicCreate(Topic):
+    pass
+class TopicRead(Topic):
+    id: int
+# end topics table
 
 ### DETAIL MODEL ###
 class UserSchoolDetail(BaseModel):
