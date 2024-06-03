@@ -57,8 +57,6 @@ class User(SQLModel, table=True):
     school_id: int | None = None
     school_major_id: int | None = None
 
-    # ratings: List["UserTopicRating"] = Relationship(back_populates="user")
-
     @classmethod
     def from_db(cls, db_model):
         return cls(
@@ -67,7 +65,7 @@ class User(SQLModel, table=True):
             first_name=db_model.first_name,
             last_name=db_model.last_name
         )
-    
+
 # user_topic_rating table
 class UserTopicRating(SQLModel, table=True):
     __tablename__ = "user_topic_rating"
@@ -97,6 +95,9 @@ class Token(BaseModel):
     token_type: str = "bearer"
     user: User | None = None
 
+
+
+### SQL MODEL ###
 class School(SQLModel, table=True):
     __tablename__ = "schools"
     id: int | None = Field(default=None, primary_key=True)
@@ -125,9 +126,140 @@ class SchoolMajor(SQLModel, table=True):
             school_major_name=db_model.school_major_name
         )
 
+
+
+class College(SQLModel, table=True):
+    __tablename__ = "college"
+    id: int | None = Field(default=None, primary_key=True)
+    college_name: str | None = Field(default=None)
+    college_province: str | None = Field(default=None)
+    college_city: str | None = Field(default=None)
+    details: List['CollegeDetail'] = Relationship(back_populates="college")
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            college_name=db_model.college_name,
+            college_province=db_model.college_province,
+            college_city=db_model.college_city
+        )
+
+class CollegeDetail(SQLModel, table=True):
+    __tablename__ = "college_detail"
+    id: int | None = Field(default=None, primary_key=True)
+    college_id: int | None = Field(default=None, foreign_key="college.id")
+    major_id: int | None = Field(default=None)
+    college: College = Relationship(back_populates="details")
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            college_id=db_model.college_id
+        )
+
+class Major(SQLModel, table=True):
+    __tablename__ = "major"
+    id: int | None = Field(default=None, primary_key=True)
+    major_name: str | None = Field(default=None)
+    major_definition: str | None = Field(default=None)
+    major_image: str | None = Field(default=None)
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            major_name=db_model.major_name
+        )
+
+class Course(SQLModel, table=True):
+    __tablename__ = "course"
+    id: int | None = Field(default=None, primary_key=True)
+    course_name: str | None = Field(default=None)
+    course_image: str | None = Field(default=None)
+    course_definition: str | None = Field(default=None)
+    course_explain: str | None = Field(default=None)
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            course_name=db_model.course_name
+        )
+
+class Personality(SQLModel, table=True):
+    __tablename__ = "personality"
+    id: int | None = Field(default=None, primary_key=True)
+    personality_name: str | None = Field(default=None)
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            personality_name=db_model.personality_name
+        )
+
+class FutureProspect(SQLModel, table=True):
+    __tablename__ = "future_prospect"
+    id: int | None = Field(default=None, primary_key=True)
+    future_prospect_name: str | None = Field(default=None)
+    description: str | None = Field(default=None)
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            future_prospect_name=db_model.future_prospect_name
+        )
+
+class MajorPersonality(SQLModel, table=True):
+    __tablename__ = "major_personality"
+    id: int | None = Field(default=None, primary_key=True)
+    major_id: int | None = Field(default=None)
+    personality_id: int | None = Field(default=None)
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            major_id=db_model.major_id
+        )
+
+class MajorProspect(SQLModel, table=True):
+    __tablename__ = "major_prospect"
+    id: int | None = Field(default=None, primary_key=True)
+    major_id: int | None = Field(default=None)
+    prospect_id: int | None = Field(default=None)
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            major_id=db_model.major_id
+        )
+
+class MajorCourse(SQLModel, table=True):
+    __tablename__ = "major_course"
+    id: int | None = Field(default=None, primary_key=True)
+    major_id: int | None = Field(default=None)
+    course_id: int | None = Field(default=None)
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            major_id=db_model.major_id
+        )
+
+
+
+
+
+### DETAIL MODEL ###
 class UserSchoolDetail(BaseModel):
-    school: School
-    school_major: SchoolMajor
+    school: School | None = None
+    school_major: SchoolMajor | None = None
     user: User
 
 
@@ -146,6 +278,12 @@ class SchoolListResponse(ResponseModel):
 
 class SchoolMajorListResponse(ResponseModel):
     data: list[SchoolMajor] | None = None
+
+class MajorListResponse(ResponseModel):
+    data: list[Major] | None = None
+
+class CollegeListResponse(ResponseModel):
+    data: list[College] | None = None
 
 # Generic message
 class Message(SQLModel):
