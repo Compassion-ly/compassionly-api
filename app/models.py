@@ -253,19 +253,29 @@ class UserTopicRatingRead(UserTopicRating):
 # start topics table
 class Topic(SQLModel, table=True):
     __tablename__ = "topics"
-    id = Column(Integer, primary_key=True)
-    topic_name = Column(String, nullable=True)  # Example: Limit to 512 characters
-    topic_category_id = Column(Integer, nullable=True)
-    short_introduction = Column(String(1000), nullable=True)  # Example: Limit to 1000 characters
-    topic_image = Column(String(512), nullable=True)  # Example: Limit to 512 characters
-    topic_image2 = Column(String, nullable=True)  # Example: Limit to 512 characters
-    topic_explanation = Column(Text, nullable=True)
+    id: int = Field(primary_key=True)
+    topic_name: str = Field(nullable=True)  # Example: Limit to 512 characters
+    topic_category_id: int = Field(nullable=True)
+    short_introduction: str = Field(nullable=True, max_length=1000)  # Example: Limit to 1000 characters
+    topic_image: str = Field(nullable=True, max_length=512)  # Example: Limit to 512 characters
+    topic_image2: str = Field(nullable=True, max_length=512)  # Example: Limit to 512 characters
+    topic_explanation: str = Field(nullable=True)
 
 class TopicCreate(Topic):
     pass
 class TopicRead(Topic):
     id: int
 # end topics table
+
+# start topic_category table
+class TopicCategory(SQLModel, table=True):
+    __tablename__ = "topic_category"
+    id: int = Field(primary_key=True)
+    category_name: str = Field(nullable=True, max_length=100)
+
+class TopicCategoryRead(TopicCategory):
+    id: int
+# end topic_category table
 
 ### DETAIL MODEL ###
 class UserSchoolDetail(BaseModel):
