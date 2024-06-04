@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Text, Integer
+from sqlalchemy.orm import relationship
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel
 from typing import Annotated, Any, Generic, Optional, TypeVar, List
@@ -57,6 +58,9 @@ class User(SQLModel, table=True):
     gender: str | None = None
     school_id: int | None = None
     school_major_id: int | None = None
+
+    # Define the relationship to UserTopicRating
+    user_topic_ratings: List["UserTopicRating"] = Relationship(back_populates="user")
 
     @classmethod
     def from_db(cls, db_model):
@@ -224,16 +228,71 @@ class MajorCourse(SQLModel, table=True):
             major_id=db_model.major_id
         )
 
+# start topic_category table
+class TopicCategory(SQLModel, table=True):
+    __tablename__ = "topic_category"
+    id: int = Field(primary_key=True)
+    category_name: Optional[str] = Field(nullable=True, max_length=100)
+
+    # Define the relationship to Topic
+    topics: List["Topic"] = Relationship(back_populates="category")
+
+class TopicCategoryRead(SQLModel):
+    id: int
+    category_name: Optional[str]
+
+# end topic_category table
+
+# start topics table
+class Topic(SQLModel, table=True):
+    __tablename__ = "topics"
+    id: int = Field(primary_key=True)
+    topic_name: Optional[str] = Field(nullable=True, index=True, max_length=512)
+    topic_category_id: Optional[int] = Field(foreign_key="topic_category.id")
+    short_introduction: Optional[str] = Field(nullable=True, max_length=1000)
+    topic_image: Optional[str] = Field(nullable=True, max_length=512)
+    topic_image2: Optional[str] = Field(nullable=True, max_length=512)
+    topic_explanation: Optional[str] = Field(nullable=True)
+
+    # Define the relationship to TopicCategory
+    category: Optional[TopicCategory] = Relationship(back_populates="topics")
+    # Define the relationship to UserTopicRating
+    ratings: List["UserTopicRating"] = Relationship(back_populates="topic")
+
+class TopicCreate(SQLModel):
+    topic_name: Optional[str]
+    topic_category_id: Optional[int]
+    short_introduction: Optional[str]
+    topic_image: Optional[str]
+    topic_image2: Optional[str]
+    topic_explanation: Optional[str]
+
+class TopicRead(SQLModel):
+    id: int
+    topic_name: Optional[str]
+    topic_category_id: Optional[int]
+    short_introduction: Optional[str]
+    topic_image: Optional[str]
+    topic_image2: Optional[str]
+    topic_explanation: Optional[str]
+    ratings: List["UserTopicRatingRead"] = []
+
+# end topics table
+
 # start user_topic_rating table
 class UserTopicRating(SQLModel, table=True):
     __tablename__ = "user_topic_rating"
     id: int = Field(primary_key=True)
-    user_id: int | None = Field(default=None) # = Field(foreign_key="users.id")
-    rating: str | None = Field(default=None)
-    topic_id: int | None = Field(default=None) # = Field(foreign_key="topics.id")
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", index=True)
+    rating: Optional[str] = Field(default=None)
+    topic_id: Optional[int] = Field(foreign_key="topics.id")
 
-    # user: User = Relationship(back_populates="ratings")
-    # topic: Topic = Relationship(back_populates="ratings")
+    # Define the relationship to the Topic
+    topic: Optional[Topic] = Relationship(back_populates="ratings")
+
+    # Define the relationship to the User
+    user: Optional["User"] = Relationship(back_populates="user_topic_ratings")
+
     @classmethod
     def from_db(cls, db_model):
         return cls(
@@ -243,40 +302,16 @@ class UserTopicRating(SQLModel, table=True):
             topic_id=db_model.topic_id
         )
 
-class UserTopicRatingCreate(UserTopicRating):
+class UserTopicRatingCreate(SQLModel):
     rating: str
     topic_id: int
-class UserTopicRatingRead(UserTopicRating):
-    id: int
 
+class UserTopicRatingRead(SQLModel):
+    id: int
+    user_id: Optional[int]
+    rating: Optional[str]
+    topic_id: Optional[int]
 # end user_topic_rating table
-
-# start topics table
-class Topic(SQLModel, table=True):
-    __tablename__ = "topics"
-    id: int = Field(primary_key=True)
-    topic_name: str = Field(nullable=True)  # Example: Limit to 512 characters
-    topic_category_id: int = Field(nullable=True)
-    short_introduction: str = Field(nullable=True, max_length=1000)  # Example: Limit to 1000 characters
-    topic_image: str = Field(nullable=True, max_length=512)  # Example: Limit to 512 characters
-    topic_image2: str = Field(nullable=True, max_length=512)  # Example: Limit to 512 characters
-    topic_explanation: str = Field(nullable=True)
-
-class TopicCreate(Topic):
-    pass
-class TopicRead(Topic):
-    id: int
-# end topics table
-
-# start topic_category table
-class TopicCategory(SQLModel, table=True):
-    __tablename__ = "topic_category"
-    id: int = Field(primary_key=True)
-    category_name: str = Field(nullable=True, max_length=100)
-
-class TopicCategoryRead(TopicCategory):
-    id: int
-# end topic_category table
 
 ### DETAIL MODEL ###
 class UserSchoolDetail(BaseModel):
