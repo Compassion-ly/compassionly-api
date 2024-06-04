@@ -150,6 +150,16 @@ def upgrade():
                 "user_schools_id": 3,
                 "hashed_password": "",
             },
+            {
+                "email": "ikrarb95@gmail.com",
+                "is_active": True,
+                "first_name": "Ikrar",
+                "last_name": "Bagaskara",
+                "phone_number": "081393333838",
+                "gender": "male",
+                "user_schools_id": 1,
+                "hashed_password": "",
+            },
         ]
     )
 

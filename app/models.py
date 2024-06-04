@@ -227,7 +227,7 @@ class MajorCourse(SQLModel, table=True):
 # start user_topic_rating table
 class UserTopicRating(SQLModel, table=True):
     __tablename__ = "user_topic_rating"
-    id: int | None = Field(default=None, primary_key=True)
+    id: int = Field(primary_key=True)
     user_id: int | None = Field(default=None) # = Field(foreign_key="users.id")
     rating: str | None = Field(default=None)
     topic_id: int | None = Field(default=None) # = Field(foreign_key="topics.id")
@@ -244,7 +244,8 @@ class UserTopicRating(SQLModel, table=True):
         )
 
 class UserTopicRatingCreate(UserTopicRating):
-    pass
+    rating: str
+    topic_id: int
 class UserTopicRatingRead(UserTopicRating):
     id: int
 
