@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routes import auth, users, schools, colleges
 from app.api.routes.topics import user_topic_rating, topic_category, topics
+from app.api.routes.ml_model import predict
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["login"])
@@ -13,5 +14,7 @@ api_router.include_router(topics.router, prefix="/topics", tags=["topics"])
 api_router.include_router(topic_category.router, prefix="/topics", tags=["topic-category"])
 
 api_router.include_router(colleges.router, prefix="/colleges", tags=["colleges"])
+
+api_router.include_router(predict.router, prefix="/predict", tags=["predict"])
 
 
