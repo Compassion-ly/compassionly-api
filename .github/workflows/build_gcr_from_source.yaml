@@ -2,11 +2,11 @@ name: Deploy to Cloud Run from Source
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "connect_to_ml_model" ]
 
 env:
   PROJECT_ID: compassion-ly-app
-  SERVICE: compassionly-api
+  SERVICE: compassionly-api-test
   REGION: asia-southeast2
   TAGS: 1.0.0
   IMAGE_FOLDER: backend
@@ -36,15 +36,17 @@ jobs:
       - name: 'Setup Servie Account'
         run: |
           gcloud storage cp "${{ secrets.SA_FB }}" .
+          gcloud storage cp "${{ secrets.VERTEX_SERVICE_ACCOUNT }}" .
     
-      - name: 'Create .env & serviceAccountKey.json file'
+      - name: 'Create .env file'
         run: |
-          echo "${{ secrets.ENV_FILE }}" > $GITHUB_WORKSPACE/.env
+          echo "${{ secrets.DEV_ENV_FILE }}" > $GITHUB_WORKSPACE/.env
 
       - name: 'Ensure .env file exists'
         run: |
           ls -la $GITHUB_WORKSPACE/.env
           ls -la $GITHUB_WORKSPACE/serviceAccountKey.json
+          ls -la $GITHUB_WORKSPACE/vertexServiceAccount.json
 
       - name: 'Delete .gitignore'
         run: |

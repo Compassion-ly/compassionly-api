@@ -9,3 +9,4 @@ htmlcov
 serviceAccountKey.json
 .env
 .idea
+vertexServiceAccount.json
