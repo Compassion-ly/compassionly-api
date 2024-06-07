@@ -14,6 +14,8 @@ COPY requirements.txt /app/
 # Copy .env and serviceAccountKey.json into the container
 COPY .env /app/
 COPY serviceAccountKey.json /app/
+COPY vertexServiceAccount.json /app/
+
 
 # Install dependencies
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
@@ -38,6 +40,7 @@ COPY ./scripts/ /app/
 COPY ./alembic.ini /app/
 COPY ./tests-start.sh /app/
 COPY ./app /app/app
+COPY ./assets /app/
 
 EXPOSE 80
 

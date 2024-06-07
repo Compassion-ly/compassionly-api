@@ -41,8 +41,9 @@ jobs:
       - name: 'Create .env file'
         run: |
           echo "${{ secrets.DEV_ENV_FILE }}" > $GITHUB_WORKSPACE/.env
+          echo 
 
-      - name: 'Ensure .env file exists'
+      - name: 'Ensure necessary file exists'
         run: |
           ls -la $GITHUB_WORKSPACE/.env
           ls -la $GITHUB_WORKSPACE/serviceAccountKey.json
@@ -66,6 +67,7 @@ jobs:
           flags: '--port 80'
           env_vars: |
             FIREBASE_SERVICE_KEY=serviceAccountKey.json
+            VERTEX_SERVICE_ACCOUNT=vertexServiceAccount.json
 
       - name: Show Output
         run: echo ${{ steps.deploy.outputs.url }}
