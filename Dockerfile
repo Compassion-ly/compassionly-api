@@ -40,7 +40,7 @@ COPY ./scripts/ /app/
 COPY ./alembic.ini /app/
 COPY ./tests-start.sh /app/
 COPY ./app /app/app
-COPY ./assets /app/
+COPY ./assets /app/assets
 
 EXPOSE 80
 
