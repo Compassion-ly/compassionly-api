@@ -2,11 +2,11 @@ name: Deploy to Cloud Run from Source
 
 on:
   push:
-    branches: [ "connect_to_ml_model" ]
+    branches: [ "main" ]
 
 env:
   PROJECT_ID: compassion-ly-app
-  SERVICE: compassionly-api-test
+  SERVICE: compassionly-api
   REGION: asia-southeast2
   TAGS: 1.0.0
   IMAGE_FOLDER: backend
@@ -37,10 +37,10 @@ jobs:
         run: |
           gcloud storage cp "${{ secrets.SA_FB }}" .
           gcloud storage cp "${{ secrets.VERTEX_SERVICE_ACCOUNT }}" .
-    
+
       - name: 'Create .env file'
         run: |
-          echo "${{ secrets.DEV_ENV_FILE }}" > $GITHUB_WORKSPACE/.env
+          echo "${{ secrets.ENV_FILE }}" > $GITHUB_WORKSPACE/.env
           echo 
 
       - name: 'Ensure necessary file exists'
