@@ -22,31 +22,28 @@ def upgrade():
     gender_enum = ENUM('male', 'female', name='gender_types', metadata=sa.MetaData(), create_type=True)
     gender_enum.create(op.get_bind(), checkfirst=True)
 
-
     # CREATE TABLE schools
     op.create_table('schools',
-        sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
-        sa.Column('npsn', sa.String(), nullable=False),
-        sa.Column('school_name', sa.String(), nullable=False),
-        sa.Column('school_province', sa.String(), nullable=False),
-        sa.Column('school_city', sa.String(), nullable=False),
-        sa.PrimaryKeyConstraint('id')
-    )
+                    sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
+                    sa.Column('npsn', sa.String(), nullable=False),
+                    sa.Column('school_name', sa.String(), nullable=False),
+                    sa.Column('school_province', sa.String(), nullable=False),
+                    sa.Column('school_city', sa.String(), nullable=False),
+                    sa.PrimaryKeyConstraint('id')
+                    )
     op.create_index(op.f('ix_schools_npsn'), 'schools', ['npsn'], unique=True)
-
 
     # CREATE TABLE user_schools
     op.create_table('user_schools',
-        sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
-        sa.Column('school_id', sa.Integer(), sa.ForeignKey('schools.id'), nullable=False),
-        sa.Column('school_name', sa.String(), nullable=False),
-        sa.Column('school_major', sa.String(), nullable=False),
-        sa.Column('class', sa.Integer(), nullable=False),
-        sa.PrimaryKeyConstraint('id')
-    )
+                    sa.Column('id', sa.INTEGER(), autoincrement=True, nullable=False),
+                    sa.Column('school_id', sa.Integer(), sa.ForeignKey('schools.id'), nullable=False),
+                    sa.Column('school_name', sa.String(), nullable=False),
+                    sa.Column('school_major', sa.String(), nullable=False),
+                    sa.Column('class', sa.Integer(), nullable=False),
+                    sa.PrimaryKeyConstraint('id')
+                    )
     op.create_index(op.f('ix_user_schools_school_id'), 'user_schools', ['school_id'], unique=False)
     op.create_index(op.f('ix_user_schools_class'), 'user_schools', ['class'], unique=False)
-
 
     # CREATE TABLE users
     op.create_table(
@@ -60,6 +57,7 @@ def upgrade():
         sa.Column('last_name', sa.String(), nullable=True),
         sa.Column('phone_number', sa.String(), nullable=True),
         sa.Column('gender', gender_enum, nullable=True),
+        sa.Column('user_topic_weight', sa.JSON(), nullable=True),
         sa.Column('user_schools_id', sa.Integer(), sa.ForeignKey('user_schools.id'), nullable=True),
         sa.Column(
             "hashed_password", sqlmodel.sql.sqltypes.AutoString(), nullable=True
@@ -67,7 +65,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_user_email"), "users", ["email"], unique=True)
-    
+
     # generate dummy schools data
     schools = sa.table(
         "schools",
@@ -80,9 +78,12 @@ def upgrade():
     op.bulk_insert(
         schools,
         [
-            {"npsn": "12345678", "school_name": "SMA Negeri 1", "school_province": "Jawa Barat", "school_city": "Bandung"},
-            {"npsn": "87654321", "school_name": "SMA Negeri 2", "school_province": "Jawa Barat", "school_city": "Bandung"},
-            {"npsn": "23456789", "school_name": "SMA Negeri 3", "school_province": "Jawa Barat", "school_city": "Bandung"},
+            {"npsn": "12345678", "school_name": "SMA Negeri 1", "school_province": "Jawa Barat",
+             "school_city": "Bandung"},
+            {"npsn": "87654321", "school_name": "SMA Negeri 2", "school_province": "Jawa Barat",
+             "school_city": "Bandung"},
+            {"npsn": "23456789", "school_name": "SMA Negeri 3", "school_province": "Jawa Barat",
+             "school_city": "Bandung"},
         ]
     )
 
@@ -113,6 +114,7 @@ def upgrade():
         sa.column("last_name"),
         sa.column("phone_number"),
         sa.column("gender"),
+        sa.column('user_topic_weight', sa.JSON),
         sa.column("user_schools_id"),
         sa.column("hashed_password"),
     )
@@ -127,6 +129,8 @@ def upgrade():
                 "last_name": "Utomo",
                 "phone_number": "089644761687",
                 "gender": "male",
+                "user_topic_weight": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,
+                                      1.7],
                 "user_schools_id": 1,
                 "hashed_password": "",
             },
@@ -137,6 +141,8 @@ def upgrade():
                 "last_name": "Doe",
                 "phone_number": "123456789",
                 "gender": "male",
+                "user_topic_weight": [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7,
+                                      1.8],
                 "user_schools_id": 2,
                 "hashed_password": "",
             },
@@ -147,6 +153,8 @@ def upgrade():
                 "last_name": "Smith",
                 "phone_number": "987654321",
                 "gender": "female",
+                "user_topic_weight": [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8,
+                                      1.9],
                 "user_schools_id": 3,
                 "hashed_password": "",
             },
@@ -157,6 +165,8 @@ def upgrade():
                 "last_name": "Bagaskara",
                 "phone_number": "081393333838",
                 "gender": "male",
+                "user_topic_weight": [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
+                                      2.0],
                 "user_schools_id": 1,
                 "hashed_password": "",
             },
@@ -167,7 +177,7 @@ def upgrade():
     op.execute("SELECT setval('schools_id_seq', (SELECT max(id) FROM schools))")
     op.execute("SELECT setval('user_schools_id_seq', (SELECT max(id) FROM user_schools))")
     op.execute("SELECT setval('users_id_seq', (SELECT max(id) FROM users))")
-    
+
     # ### end Alembic commands ###
 
 
@@ -179,6 +189,3 @@ def downgrade():
     op.drop_table("schools")
     # ### end Alembic commands ###
     op.execute('ALTER TABLE users ALTER COLUMN gender TYPE gender_types USING gender::gender_types')
-
-
-

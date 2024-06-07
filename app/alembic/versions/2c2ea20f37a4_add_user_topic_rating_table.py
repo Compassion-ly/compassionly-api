@@ -22,7 +22,7 @@ def upgrade():
     op.create_table('user_topic_rating',
                     sa.Column('id', sa.Integer(), nullable=False, autoincrement=True),
                     sa.Column('user_id', sa.Integer(), nullable=False),
-                    sa.Column('rating', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+                    sa.Column('rating',  sa.Integer(), nullable=False),
                     sa.Column('topic_id', sa.Integer(), nullable=False),
                     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
                     sa.PrimaryKeyConstraint('id')
@@ -33,13 +33,15 @@ def upgrade():
             'user_topic_rating',
             sa.column('id', sa.Integer),
             sa.column('user_id', sa.Integer),
-            sa.column('rating', sa.String),
+            sa.column('rating', sa.Integer),
             sa.column('topic_id', sa.Integer)
         ),
         [
-            {'id': 1, 'user_id': 1, 'rating': '1', 'topic_id': 1},
-            {'id': 2, 'user_id': 2, 'rating': '2', 'topic_id': 2},
-            {'id': 3, 'user_id': 3, 'rating': '3', 'topic_id': 3},
+            {'id': 1, 'user_id': 1, 'rating': 1, 'topic_id': 1},
+            {'id': 2, 'user_id': 2, 'rating': 2, 'topic_id': 2},
+            {'id': 3, 'user_id': 3, 'rating': 3, 'topic_id': 3},
+            {'id': 4, 'user_id': 4, 'rating': 5, 'topic_id': 2},
+            {'id': 5, 'user_id': 4, 'rating': 3, 'topic_id': 3},
         ]
     )
     op.alter_column('schools', 'npsn',

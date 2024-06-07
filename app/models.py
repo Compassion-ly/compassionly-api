@@ -1,7 +1,7 @@
-from sqlalchemy import Column, String, Text, Integer
+from sqlalchemy import Column, String, Text, Integer, JSON
 from sqlalchemy.orm import relationship
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 from typing import Annotated, Any, Generic, Optional, TypeVar, List
 
 T = TypeVar('T')
@@ -56,6 +56,7 @@ class User(SQLModel, table=True):
     last_name: str | None = None
     phone_number: str | None = None
     gender: str | None = None
+    user_topic_weight: Optional[Json[List[float]]] = Field(default=None, sa_column=Column(JSON))
     school_id: int | None = None
     school_major_id: int | None = None
 
@@ -252,6 +253,7 @@ class Topic(SQLModel, table=True):
     short_introduction: Optional[str] = Field(nullable=True, max_length=1000)
     topic_image: Optional[str] = Field(nullable=True, max_length=512)
     topic_image2: Optional[str] = Field(nullable=True, max_length=512)
+    topic_weight: Optional[Json[List[float]]] = Field(default=None, sa_column=Column(JSON))  # Use JSON type for SQLAlchemy and Pydantic's Json type
     topic_explanation: Optional[str] = Field(nullable=True)
 
     # Define the relationship to TopicCategory
@@ -284,7 +286,7 @@ class UserTopicRating(SQLModel, table=True):
     __tablename__ = "user_topic_rating"
     id: int = Field(primary_key=True)
     user_id: Optional[int] = Field(default=None, foreign_key="users.id", index=True)
-    rating: Optional[str] = Field(default=None)
+    rating: Optional[int] = Field(default=None)
     topic_id: Optional[int] = Field(foreign_key="topics.id")
 
     # Define the relationship to the Topic
@@ -303,13 +305,13 @@ class UserTopicRating(SQLModel, table=True):
         )
 
 class UserTopicRatingCreate(SQLModel):
-    rating: str
+    rating: int
     topic_id: int
 
 class UserTopicRatingRead(SQLModel):
     id: int
     user_id: Optional[int]
-    rating: Optional[str]
+    rating: Optional[int]
     topic_id: Optional[int]
 # end user_topic_rating table
 
