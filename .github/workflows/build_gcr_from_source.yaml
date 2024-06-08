@@ -36,15 +36,18 @@ jobs:
       - name: 'Setup Servie Account'
         run: |
           gcloud storage cp "${{ secrets.SA_FB }}" .
-    
-      - name: 'Create .env & serviceAccountKey.json file'
+          gcloud storage cp "${{ secrets.VERTEX_SERVICE_ACCOUNT }}" .
+
+      - name: 'Create .env file'
         run: |
           echo "${{ secrets.ENV_FILE }}" > $GITHUB_WORKSPACE/.env
+          echo 
 
-      - name: 'Ensure .env file exists'
+      - name: 'Ensure necessary file exists'
         run: |
           ls -la $GITHUB_WORKSPACE/.env
           ls -la $GITHUB_WORKSPACE/serviceAccountKey.json
+          ls -la $GITHUB_WORKSPACE/vertexServiceAccount.json
 
       - name: 'Delete .gitignore'
         run: |
@@ -64,6 +67,7 @@ jobs:
           flags: '--port 80'
           env_vars: |
             FIREBASE_SERVICE_KEY=serviceAccountKey.json
+            VERTEX_SERVICE_ACCOUNT=vertexServiceAccount.json
 
       - name: Show Output
         run: echo ${{ steps.deploy.outputs.url }}
