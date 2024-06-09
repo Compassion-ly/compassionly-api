@@ -69,7 +69,14 @@ class User(SQLModel, table=True):
             id=db_model.id,
             email=db_model.email,
             first_name=db_model.first_name,
-            last_name=db_model.last_name
+            last_name=db_model.last_name,
+            uid=db_model.uid,
+            is_active=db_model.is_active,
+            phone_number=db_model.phone_number,
+            gender=db_model.gender,
+            user_topic_weight=db_model.user_topic_weight,
+            school_id=db_model.school_id,
+            school_major_id=db_model.school_major_id,
         )
 class Token(BaseModel):
     access_token: str | None = None
@@ -90,7 +97,9 @@ class School(SQLModel, table=True):
         return cls(
             id=db_model.id,
             npsn=db_model.npsn,
-            school_name=db_model.school_name
+            school_name=db_model.school_name,
+            school_province=db_model.school_province,
+            school_city=db_model.school_city
         )
 
 class SchoolMajor(SQLModel, table=True):
@@ -277,7 +286,8 @@ class TopicRead(SQLModel):
     topic_image: Optional[str]
     topic_image2: Optional[str]
     topic_explanation: Optional[str]
-    ratings: List["UserTopicRatingRead"] = []
+    topic_weight: Optional[List[float]]
+    #ratings: List["UserTopicRatingRead"] = []
 
 # end topics table
 
