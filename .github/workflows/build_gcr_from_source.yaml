@@ -2,11 +2,11 @@ name: Deploy to Cloud Run from Source
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "quick_recommendation_model" ]
 
 env:
   PROJECT_ID: compassion-ly-app
-  SERVICE: compassionly-api
+  SERVICE: compassionly-api-test
   REGION: asia-southeast2
   TAGS: 1.0.0
   IMAGE_FOLDER: backend
@@ -40,7 +40,7 @@ jobs:
 
       - name: 'Create .env file'
         run: |
-          echo "${{ secrets.ENV_FILE }}" > $GITHUB_WORKSPACE/.env
+          echo "${{ secrets.DEV_ENV_FILE }}" > $GITHUB_WORKSPACE/.env
           echo 
 
       - name: 'Ensure necessary file exists'

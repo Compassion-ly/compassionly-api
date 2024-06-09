@@ -54,10 +54,13 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str  = "changethis"
     POSTGRES_DB: str = "" # type: ignore
 
-    vertex_service_account: str
-    vertex_model_numeric_url: str
-    vertex_model_features_normalized: str
-    vertex_model_targets: str
+    VERTEX_SERVICE_ACCOUNT: str
+    VERTEX_MODEL_NUMERIC_URL: str
+    VERTEX_MODEL_FEATURES_NORMALIZED: str
+    VERTEX_MODEL_TARGETS: str
+    VERTEX_QRECOM_TOKENIZER: str
+    VERTEX_QRECOM_ENDPOINT_URL: str
+    VERTEX_QRECOM_INSTANCES: str
 
     @computed_field  # type: ignore[misc]
     @property
