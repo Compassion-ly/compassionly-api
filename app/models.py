@@ -111,8 +111,6 @@ class College(SQLModel, table=True):
     __tablename__ = "college"
     id: int | None = Field(default=None, primary_key=True)
     college_name: str | None = Field(default=None)
-    college_province: str | None = Field(default=None)
-    college_city: str | None = Field(default=None)
     details: List['CollegeDetail'] = Relationship(back_populates="college")
 
     @classmethod
@@ -120,8 +118,6 @@ class College(SQLModel, table=True):
         return cls(
             id=db_model.id,
             college_name=db_model.college_name,
-            college_province=db_model.college_province,
-            college_city=db_model.college_city
         )
 
 class CollegeDetail(SQLModel, table=True):
