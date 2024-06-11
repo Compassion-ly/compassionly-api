@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str  = "changethis"
     POSTGRES_DB: str = "" # type: ignore
 
+    vertex_service_account: str
+    vertex_model_numeric_url: str
+    vertex_model_features_normalized: str
+    vertex_model_targets: str
+
     @computed_field  # type: ignore[misc]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
