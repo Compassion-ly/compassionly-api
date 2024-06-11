@@ -8,3 +8,5 @@ htmlcov
 .venv
 serviceAccountKey.json
 .env
+.idea
+vertexServiceAccount.json
