@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, Text, Integer, JSON
+from sqlalchemy import Column, String, Text, Integer, JSON, text
 from sqlalchemy.orm import relationship
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel, Json
-from typing import Annotated, Any, Generic, Optional, TypeVar, List
+from typing import Annotated, Any, Generic, Optional, TypeVar, List, Union, Dict
 
 T = TypeVar('T')
 
@@ -69,7 +69,14 @@ class User(SQLModel, table=True):
             id=db_model.id,
             email=db_model.email,
             first_name=db_model.first_name,
-            last_name=db_model.last_name
+            last_name=db_model.last_name,
+            uid=db_model.uid,
+            is_active=db_model.is_active,
+            phone_number=db_model.phone_number,
+            gender=db_model.gender,
+            user_topic_weight=db_model.user_topic_weight,
+            school_id=db_model.school_id,
+            school_major_id=db_model.school_major_id,
         )
 class Token(BaseModel):
     access_token: str | None = None
@@ -90,7 +97,9 @@ class School(SQLModel, table=True):
         return cls(
             id=db_model.id,
             npsn=db_model.npsn,
-            school_name=db_model.school_name
+            school_name=db_model.school_name,
+            school_province=db_model.school_province,
+            school_city=db_model.school_city
         )
 
 class SchoolMajor(SQLModel, table=True):
@@ -105,49 +114,69 @@ class SchoolMajor(SQLModel, table=True):
             school_major_name=db_model.school_major_name
         )
 
+class CollegeDetail(SQLModel, table=True):
+    __tablename__ = "college_detail"
+    id: int | None = Field(default=None, primary_key=True)
+    college_id: int = Field(default=None, foreign_key="college.id")
+    major_id: int = Field(default=None, foreign_key="major.id")
+    capacity: int | None = Field(default=None)
+    interest: int | None = Field(default=None)
+    portofolio_type: str | None = Field(default=None)
+
+    # Relationship with College
+    college: Optional["College"] = Relationship(back_populates="college_detail")
+    major: Optional["Major"] = Relationship(back_populates="college_details")
+
+    @classmethod
+    def from_db(cls, db_model):
+        return cls(
+            id=db_model.id,
+            college_id=db_model.college_id,
+            major_id=db_model.major_id,
+            capacity=db_model.capacity,
+            interest=db_model.interest,
+            portofolio_type=db_model.portofolio_type
+        )
+
 class College(SQLModel, table=True):
     __tablename__ = "college"
     id: int | None = Field(default=None, primary_key=True)
     college_name: str | None = Field(default=None)
-    college_province: str | None = Field(default=None)
-    college_city: str | None = Field(default=None)
-    details: List['CollegeDetail'] = Relationship(back_populates="college")
+
+    # Relationship with CollegeDetail
+    college_detail: Optional[CollegeDetail] = Relationship(back_populates="college")
 
     @classmethod
     def from_db(cls, db_model):
         return cls(
             id=db_model.id,
             college_name=db_model.college_name,
-            college_province=db_model.college_province,
-            college_city=db_model.college_city
         )
 
-class CollegeDetail(SQLModel, table=True):
-    __tablename__ = "college_detail"
-    id: int | None = Field(default=None, primary_key=True)
-    college_id: int | None = Field(default=None, foreign_key="college.id")
-    major_id: int | None = Field(default=None)
-    college: College = Relationship(back_populates="details")
-
-    @classmethod
-    def from_db(cls, db_model):
-        return cls(
-            id=db_model.id,
-            college_id=db_model.college_id
-        )
 
 class Major(SQLModel, table=True):
     __tablename__ = "major"
-    id: int | None = Field(default=None, primary_key=True)
-    major_name: str | None = Field(default=None)
-    major_definition: str | None = Field(default=None)
-    major_image: str | None = Field(default=None)
+    id: int = Field(default=None, primary_key=True)
+    major_name: Optional[str] = Field(default=None)
+    major_definition: Optional[str] = Field(default=None)
+    major_image: Optional[str] = Field(default=None)
+    major_interest: Optional[int] = Field(default=None)
+    major_level: Optional[str] = Field(default=None)
+    for_who: Optional[str] = Field(default=None)
+
+    # Relationship with CollegeDetail
+    college_details: List[CollegeDetail] = Relationship(back_populates="major")
 
     @classmethod
     def from_db(cls, db_model):
         return cls(
             id=db_model.id,
-            major_name=db_model.major_name
+            major_name=db_model.major_name,
+            major_definition=db_model.major_definition,
+            major_image=db_model.major_image,
+            major_interest=db_model.major_interest,
+            major_level=db_model.major_level,
+            for_who=db_model.for_who
         )
 
 class Course(SQLModel, table=True):
@@ -277,7 +306,8 @@ class TopicRead(SQLModel):
     topic_image: Optional[str]
     topic_image2: Optional[str]
     topic_explanation: Optional[str]
-    ratings: List["UserTopicRatingRead"] = []
+    topic_weight: Optional[List[float]]
+    #ratings: List["UserTopicRatingRead"] = []
 
 # end topics table
 
@@ -344,12 +374,32 @@ class MajorListResponse(ResponseModel):
 class CollegeListResponse(ResponseModel):
     data: list[College] | None = None
 
+class CollegeResponse(BaseModel):
+    message: str
+    data: Dict[int, Dict[str, Union[College, List[CollegeDetail]]]]
+
+    class Config:
+        from_attributes = True
+
+class MajorListResponseModel(BaseModel):
+    message: str
+    data: List[Major]
+
+class MajorResponseModel(BaseModel):
+    message: str
+    data: Major
+
+class CollegeResponseModel(BaseModel):
+    message: str
+    data: College
+
+class CollegeDetailResponseModel(BaseModel):
+    message: str
+    data: CollegeDetail
+
 # Generic message
 class Message(SQLModel):
     message: str
-
-
-
 
 
 # Contents of JWT token

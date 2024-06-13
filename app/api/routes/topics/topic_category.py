@@ -12,11 +12,11 @@ def get_topic_by_id(
         *,
         session: SessionDep,
         id: int,
-        current_user: str = Depends(get_current_user)  # Ensure the user is authenticated
+       # current_user: str = Depends(get_current_user)  # Ensure the user is authenticated
 ) -> ResponseModel[TopicCategoryRead]:
     # Check if the user is authenticated
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    # if not current_user:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
     # Retrieve the topic by ID
     db_topic = session.get(TopicCategory, id)

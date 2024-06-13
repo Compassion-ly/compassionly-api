@@ -1,88 +1,101 @@
+from http.client import HTTPException
+from typing import Optional, List, Union, Dict, Any
 
-from typing import Any, Optional, List
+from fastapi import APIRouter, Depends
+from sqlalchemy import or_
+from sqlmodel import select, Session
 
-
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select, text
-
-from app import crud
 from app.api.deps import (
     CurrentUser,
-    SessionDep,
-    get_current_active_superuser,
+    SessionDep, get_current_user,
 )
-from app.core.config import settings
-from app.core.security import get_password_hash, verify_password
+from app.core.db import get_session
 from app.models import (
-    User,
     College,
     Major,
-    Course,
-    Personality,
-    FutureProspect,
-    MajorPersonality,
-    MajorProspect,
-    MajorCourse,
     CollegeDetail,
-    MajorListResponse,
     CollegeListResponse,
-    MajorListResponse
+    MajorListResponse, CollegeResponse, CollegeResponseModel, CollegeDetailResponseModel
 )
-from app.utils import generate_new_account_email, send_email
-from sqlalchemy import or_
+
 router = APIRouter()
 
-
-# @router.get(
-#     "/",
-#     dependencies=[Depends(get_current_active_superuser)],
-#     response_model=UsersPublic,
-# )
-# def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
-#     """
-#     Retrieve users.
-#     """
-
-#     count_statement = select(func.count()).select_from(User)
-#     count = session.exec(count_statement).one()
-
-#     statement = select(User).offset(skip).limit(limit)
-#     users = session.exec(statement).all()
-
-#     return UsersPublic(data=users, count=count)
-
-# get current logged in user school info
-
 # API to list all majors
-@router.get("/list-college-majors", response_model=MajorListResponse) 
-def list_college_majors(session: SessionDep, current_user: CurrentUser, search_query: Optional[str] = None) -> MajorListResponse:
-    """
-    List all college majors.
-    """
-    query = select(Major)
-    if search_query:
-        query = query.where(
-            or_(
-                Major.major_name.ilike(f"%{search_query}%"),
-                Major.major_definition.ilike(f"%{search_query}%")
-            )
-        )
-    majors = session.exec(query).all()
-    return MajorListResponse(data=majors, message="Majors retrieved successfully")
+# @router.get("/list-college", response_model=MajorListResponse)
+# def list_college_majors(session: SessionDep, current_user: CurrentUser, search_query: Optional[str] = None) -> MajorListResponse:
+#     """
+#     List all college majors.
+#     """
+#     query = select(Major)
+#     if search_query:
+#         query = query.where(
+#             or_(
+#                 Major.major_name.ilike(f"%{search_query}%"),
+#                 Major.major_definition.ilike(f"%{search_query}%")
+#             )
+#         )
+#     majors = session.exec(query).all()
+#     return MajorListResponse(data=majors, message="Majors retrieved successfully")
+#
+# @router.get("/list-colleges/{college_id}", response_model=CollegeListResponse)
+# def list_colleges_by_major(major_id: int, session: SessionDep, current_user: CurrentUser) -> CollegeListResponse:
+#
+#     colleges = session.exec(
+#         select(College)
+#         .join(CollegeDetail, College.id == CollegeDetail.college_id)
+#         .where(CollegeDetail.major_id == major_id)
+#     ).all()
+#
+#     response = CollegeListResponse(data=colleges, message="Colleges retrieved successfully")
+#     return response
 
-# API to list all colleges that have specific major
-@router.get("/list-colleges-by-major/{major_id}", response_model=CollegeListResponse)
-def list_colleges_by_major(major_id: int, session: SessionDep, current_user: CurrentUser) -> CollegeListResponse:
-    """
-    List all colleges that have specific major.
-    """
-    # select all from college_detail, join with college, where major_id = major_id
-    colleges = session.exec(
-        select(College)
-        .join(CollegeDetail, College.id == CollegeDetail.college_id)  # Explicit join condition
-        .where(CollegeDetail.major_id == major_id)
-    ).all()
-    
-    response = CollegeListResponse(data=colleges, message="Colleges retrieved successfully")
-    return response
+@router.get("/colleges", response_model=Dict[str, Any])
+def get_colleges(session: Session = Depends(get_session)):
+    # Fetch all colleges
+    colleges = session.exec(select(College)).all()
+
+    # Return the response with message and data dictionary
+    return {
+        "message": "succes",
+        "data": colleges
+    }
+
+@router.get("/colleges/{id}", response_model=CollegeResponseModel)
+def get_major_by_id(college_id: int, session: Session = Depends(get_session)):
+    college = session.get(College, college_id)
+    if not college:
+        raise HTTPException(status_code=404, detail="College not found")
+    return CollegeResponseModel(message="success", data=college)
+
+@router.get("/colleges-detail", response_model=Dict[str, Any])
+def get_college_detail(session: Session = Depends(get_session)):
+    # Fetch all colleges
+    colleges_detail = session.exec(select(CollegeDetail)).all()
+
+    # Return the response with message and data dictionary
+    return {
+        "message": "succes",
+        "data": colleges_detail
+    }
+
+@router.get("/colleges-detail/{id}", response_model=CollegeDetailResponseModel)
+def get_college_detail_by_id(
+        *,
+        session: Session = Depends(get_session),
+        id: int, # Ensure the user is authenticated
+) -> CollegeDetailResponseModel:
+    # Check if the user is authenticated
+
+
+    # Retrieve the college detail by ID
+    college_detail = session.get(CollegeDetail, id)
+    if not college_detail:
+        raise HTTPException(status_code=404, detail="College detail not found")
+
+    return CollegeDetailResponseModel(
+        message="success",
+        data=college_detail
+    )
+
+
 
