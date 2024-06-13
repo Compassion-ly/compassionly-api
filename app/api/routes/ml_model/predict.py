@@ -1,20 +1,22 @@
 import json
 import os
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
 
 import numpy as np
 import requests
 from fastapi import APIRouter, FastAPI, HTTPException, Depends
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2 import service_account
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from sklearn.preprocessing import normalize
+from sqlalchemy.orm import Session as SessionType
+from sqlmodel import select
 from transformers import AutoTokenizer
-from dotenv import load_dotenv
 
 from app.api.deps import get_current_user
 from app.core.config import settings
-from app.models import User
+from app.core.db import get_session
+from app.models import User, Major
 
 # Setup environment variables and constants
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
@@ -45,9 +47,13 @@ features_normalized = np.load(vertex_model_features_normalized)
 targets = np.load(vertex_model_targets, allow_pickle=True)
 
 
+class MajorResponseModel(BaseModel):
+    id: Optional[int]
+    major_name: str
+
 class PredictionResponse(BaseModel):
-    message: str = Field(..., example="success")
-    data: Dict[str, List[str]]
+    message: str
+    data: Dict[str, List[MajorResponseModel]]
 
 
 class ErrorResponse(BaseModel):
@@ -62,7 +68,7 @@ class InputText(BaseModel):
     text: str
 
 
-def tokenize_texts(texts, tokenizer, max_len=128):
+def tokenize_texts(texts, tokenizer, max_len=256):
     return tokenizer(
         texts,
         max_length=max_len,
@@ -139,7 +145,8 @@ def recommend(input_data, features_normalized, targets, top_k=10):
 })
 async def predict_for_user(
         request: UserPredictionRequest,
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        session: SessionType = Depends(get_session)
 ):
     user_topic_weight = current_user.user_topic_weight
 
@@ -161,11 +168,23 @@ async def predict_for_user(
 
         recommendations = recommend(predictions, features_normalized, targets)
 
-        return {"message": "success", "data": {"prediction": recommendations}}  # Updated response format
+        # Fetch major details from the database
+        major_details = []
+        for major_name in recommendations:
+            statement = select(Major).where(Major.major_name == major_name)
+            major = session.exec(statement).first()
+            if major:
+                major_details.append(MajorResponseModel(id=major.id, major_name=major.major_name))
+            else:
+                # Assign a default id value when the major is not found
+                major_details.append(MajorResponseModel(id=None, major_name=major_name))
+
+        return {"message": "success", "data": {"prediction": major_details}}
     elif response.status_code == 400:
         raise HTTPException(status_code=400, detail="Bad request. Invalid input.")
     else:
         raise HTTPException(status_code=500, detail="Internal server error.")
+
 
 @router.post("/quick-recommendation", response_model=PredictionResponse, responses={
     200: {"model": PredictionResponse, "description": "Successful response with recommendations."},
