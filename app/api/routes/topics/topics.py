@@ -18,11 +18,11 @@ def get_topic_by_id(
         *,
         session: Session = Depends(get_session),
         id: int,
-        current_user: str = Depends(get_current_user)  # Ensure the user is authenticated
+        # current_user: str = Depends(get_current_user)  # Ensure the user is authenticated
 ) -> ResponseModel[TopicRead]:
     # Check if the user is authenticated
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    # if not current_user:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
     # Retrieve the topic by ID
     db_topic = session.get(Topic, id)
@@ -38,13 +38,13 @@ def get_topic_by_id(
 def get_all_topics(
         *,
         session: Session = Depends(get_session),
-        current_user: str = Depends(get_current_user),  # Ensure the user is authenticated
+        # current_user: str = Depends(get_current_user),  # Ensure the user is authenticated
         limit: int = Query(25, ge=1, le=100),  # Limit the number of topics returned, default to 25, max 100
         offset: int = Query(0, ge=0)  # Offset for pagination, default to 0
 ) -> ResponseModel[List[TopicRead]]:
     # Check if the user is authenticated
-    if not current_user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    # if not current_user:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
     # Retrieve topics with limit and offset
     db_topics = session.exec(select(Topic).offset(offset).limit(limit)).all()

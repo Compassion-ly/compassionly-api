@@ -82,12 +82,10 @@ def get_college_detail(session: Session = Depends(get_session)):
 def get_college_detail_by_id(
         *,
         session: Session = Depends(get_session),
-        id: int,
-        current_user: str = Depends(get_current_user)  # Ensure the user is authenticated
+        id: int, # Ensure the user is authenticated
 ) -> CollegeDetailResponseModel:
     # Check if the user is authenticated
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+
 
     # Retrieve the college detail by ID
     college_detail = session.get(CollegeDetail, id)

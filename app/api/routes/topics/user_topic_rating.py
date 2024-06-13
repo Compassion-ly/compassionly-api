@@ -86,7 +86,7 @@ async def get_user_topic_rating_by_id(
         *,
         session: SessionDep,
         id: int,
-        current_user: str = Depends(get_current_user)
+        # current_user: str = Depends(get_current_user)
 ) -> ResponseModel[UserTopicRatingRead]:
     """
     Retrieve a specific UserTopicRating by ID.
