@@ -1,11 +1,11 @@
-from sqlalchemy import Column, String, Text, Integer, JSON, text
+from sqlalchemy import Column, String, Text, Integer, JSON, text, MetaData
 from sqlalchemy.orm import relationship
 from sqlmodel import Field, Relationship, SQLModel
 from pydantic import BaseModel, Json
 from typing import Annotated, Any, Generic, Optional, TypeVar, List, Union, Dict
 
 T = TypeVar('T')
-
+metadata = MetaData()
 # generic class for response
 class ResponseModel(BaseModel, Generic[T]):
     message: str | None = "Success"
@@ -140,9 +140,11 @@ class CollegeDetail(SQLModel, table=True):
 
 class College(SQLModel, table=True):
     __tablename__ = "college"
-    id: int | None = Field(default=None, primary_key=True)
-    college_name: str | None = Field(default=None)
-    details: List['CollegeDetail'] = Relationship(back_populates="college")
+    id: Optional[int] = Field(default=None, primary_key=True)
+    college_name: Optional[str] = Field(default=None)
+
+    # Relationship with CollegeDetail
+    college_detail: List["CollegeDetail"] = Relationship(back_populates="college")
 
     @classmethod
     def from_db(cls, db_model):
@@ -154,7 +156,7 @@ class College(SQLModel, table=True):
 
 class Major(SQLModel, table=True):
     __tablename__ = "major"
-    id: int = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     major_name: Optional[str] = Field(default=None)
     major_definition: Optional[str] = Field(default=None)
     major_image: Optional[str] = Field(default=None)
@@ -163,7 +165,13 @@ class Major(SQLModel, table=True):
     for_who: Optional[str] = Field(default=None)
 
     # Relationship with CollegeDetail
-    college_details: List[CollegeDetail] = Relationship(back_populates="major")
+    college_details: List["CollegeDetail"] = Relationship(back_populates="major")
+
+    # Relationship with MajorCourse
+    major_courses: List["MajorCourse"] = Relationship(back_populates="major")
+
+    # Relationship with MajorProspect
+    major_prospects: List["MajorProspect"] = Relationship(back_populates="major")
 
     @classmethod
     def from_db(cls, db_model):
@@ -177,19 +185,46 @@ class Major(SQLModel, table=True):
             for_who=db_model.for_who
         )
 
+class FutureProspect(SQLModel, table=True):
+    __tablename__ = "future_prospect"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    future_prospect_name: Optional[str] = Field(default=None)
+    description: Optional[str] = Field(default=None)
+
+    # Ensure the relationship name in back_populates matches the one in MajorProspect
+    major_prospects: List["MajorProspect"] = Relationship(back_populates="future_prospect")
+
+# Corrected relationship in MajorProspect
+class MajorProspect(SQLModel, table=True):
+    __tablename__ = "major_prospect"
+    __table_args__ = {'extend_existing': True}
+    id: Optional[int] = Field(default=None, primary_key=True)
+    major_id: Optional[int] = Field(default=None, foreign_key="major.id")
+    future_prospect_id: Optional[int] = Field(default=None, foreign_key="future_prospect.id")
+
+    major: Optional["Major"] = Relationship(back_populates="major_prospects")
+    future_prospect: Optional["FutureProspect"] = Relationship(back_populates="major_prospects")
+
+
 class Course(SQLModel, table=True):
     __tablename__ = "course"
-    id: int | None = Field(default=None, primary_key=True)
-    course_name: str | None = Field(default=None)
-    course_image: str | None = Field(default=None)
-    course_definition: str | None = Field(default=None)
-    course_explain: str | None = Field(default=None)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    course_name: Optional[str] = Field(default=None)
+    course_image: Optional[str] = Field(default=None)
+    course_definition: Optional[str] = Field(default=None)
+    course_explain: Optional[str] = Field(default=None)
+
+    # Relationship with MajorCourse
+    major_courses: List["MajorCourse"] = Relationship(back_populates="course")
 
     @classmethod
     def from_db(cls, db_model):
         return cls(
             id=db_model.id,
-            course_name=db_model.course_name
+            course_name=db_model.course_name,
+            course_image=db_model.course_image,
+            course_definition=db_model.course_definition,
+            course_explain=db_model.course_explain
         )
 
 class Personality(SQLModel, table=True):
@@ -204,18 +239,6 @@ class Personality(SQLModel, table=True):
             personality_name=db_model.personality_name
         )
 
-class FutureProspect(SQLModel, table=True):
-    __tablename__ = "future_prospect"
-    id: int | None = Field(default=None, primary_key=True)
-    future_prospect_name: str | None = Field(default=None)
-    description: str | None = Field(default=None)
-
-    @classmethod
-    def from_db(cls, db_model):
-        return cls(
-            id=db_model.id,
-            future_prospect_name=db_model.future_prospect_name
-        )
 
 class MajorPersonality(SQLModel, table=True):
     __tablename__ = "major_personality"
@@ -230,30 +253,23 @@ class MajorPersonality(SQLModel, table=True):
             major_id=db_model.major_id
         )
 
-class MajorProspect(SQLModel, table=True):
-    __tablename__ = "major_prospect"
-    id: int | None = Field(default=None, primary_key=True)
-    major_id: int | None = Field(default=None)
-    prospect_id: int | None = Field(default=None)
-
-    @classmethod
-    def from_db(cls, db_model):
-        return cls(
-            id=db_model.id,
-            major_id=db_model.major_id
-        )
 
 class MajorCourse(SQLModel, table=True):
     __tablename__ = "major_course"
-    id: int | None = Field(default=None, primary_key=True)
-    major_id: int | None = Field(default=None)
-    course_id: int | None = Field(default=None)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    major_id: Optional[int] = Field(default=None, foreign_key="major.id")
+    course_id: Optional[int] = Field(default=None, foreign_key="course.id")
+
+    # Relationships
+    major: Optional["Major"] = Relationship(back_populates="major_courses")
+    course: Optional["Course"] = Relationship(back_populates="major_courses")
 
     @classmethod
     def from_db(cls, db_model):
         return cls(
             id=db_model.id,
-            major_id=db_model.major_id
+            major_id=db_model.major_id,
+            course_id=db_model.course_id
         )
 
 # start topic_category table
@@ -341,6 +357,7 @@ class UserTopicRatingRead(SQLModel):
     user_id: Optional[int]
     rating: Optional[int]
     topic_id: Optional[int]
+
 # end user_topic_rating table
 
 ### DETAIL MODEL ###
@@ -348,6 +365,15 @@ class UserSchoolDetail(BaseModel):
     school: School | None = None
     school_major: SchoolMajor | None = None
     user: User
+
+class MajorDetail(BaseModel):
+    major: Major | None = None
+    courses: List[Course] | None = None
+    prospects: List[FutureProspect] | None = None
+
+
+class CourseDetail(BaseModel):
+    course: Course | None = None
 
 
 ### RESPONSE MODELS ###
@@ -394,6 +420,14 @@ class CollegeResponseModel(BaseModel):
 class CollegeDetailResponseModel(BaseModel):
     message: str
     data: CollegeDetail
+
+class CourseDetailResponseModel(BaseModel):
+    message: str
+    data: CourseDetail
+
+class MajorDetailResponseModel(BaseModel):
+    message: str
+    data: MajorDetail
 
 # Generic message
 class Message(SQLModel):
