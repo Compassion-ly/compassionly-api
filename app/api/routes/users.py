@@ -1,21 +1,18 @@
-from typing import Any
+from typing import List
+import pandas as pd
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from sqlmodel import select
 
-from app import crud
 from app.api.deps import (
     CurrentUser,
-    SessionDep,
-    get_current_active_superuser,
+    SessionDep, get_current_user,
 )
-from app.core.config import settings
-from app.core.security import get_password_hash, verify_password
+from app.core.db import get_session
 from app.models import (
-    Message,
-    UpdatePassword,
     User,
-    UserRegister,
     UserUpdateMe,
     School,
     UserDetailResponse,
@@ -23,9 +20,19 @@ from app.models import (
     UserSchoolDetailResponse,
     SchoolMajor,
 )
-from app.utils import generate_new_account_email, send_email
 
 router = APIRouter()
+
+class TopTopicsData(BaseModel):
+    top_topics: List[str]
+
+class UserTopicResponse(BaseModel):
+    message: str
+    data: TopTopicsData
+
+# Read the Excel file and create a mapping
+df = pd.read_excel('assets/data_bidang.xlsx', engine='openpyxl')
+bidang_mapping = df.set_index('id')['bidang'].to_dict()
 
 # TODO: Implement initial user setup to edit personal data that is logged in (first name, last name, phone_number, user_schools_id)
 @router.post("/save-user", response_model=UserDetailResponse)
@@ -77,6 +84,27 @@ def read_user_me(session: SessionDep, current_user: CurrentUser) -> UserSchoolDe
 
     return response
 
+
+@router.get("/field-recommendation", response_model=UserTopicResponse)
+def get_user_top_topics(
+        session: Session = Depends(get_session),
+        current_user: User = Depends(get_current_user)
+):
+    user = current_user
+    user_topic_weight = user.user_topic_weight
+    if not user_topic_weight or len(user_topic_weight) != 17:
+        raise HTTPException(status_code=400, detail="Invalid user_topic_weight data")
+
+    # Find the indices of the top 3 elements
+    top_indices = sorted(range(len(user_topic_weight)), key=lambda i: user_topic_weight[i], reverse=True)[:3]
+
+    # Map the indices to the corresponding bidang text
+    top_topics = [bidang_mapping.get(idx + 1, "Unknown") for idx in top_indices]  # +1 to match Excel index
+
+    return UserTopicResponse(
+        message="success",
+        data=TopTopicsData(top_topics=top_topics)
+    )
 
 # @router.patch(
 #     "/{user_id}",
