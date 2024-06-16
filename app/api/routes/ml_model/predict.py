@@ -55,6 +55,10 @@ class PredictionResponse(BaseModel):
     message: str
     data: Dict[str, List[MajorResponseModel]]
 
+class QuickPredictionResponse(BaseModel):
+    message: str
+    data: Dict
+
 
 class ErrorResponse(BaseModel):
     detail: str
@@ -107,7 +111,7 @@ def predict_custom_trained_model_rest(
         raise HTTPException(status_code=500, detail=f"Error making prediction request: {str(e)}")
 
 
-def get_embeddings(texts, tokenizer, max_len=128, access_token: str = None):
+def get_embeddings(texts, tokenizer, max_len=256, access_token: str = None):
     try:
         tokens = tokenize_texts(texts, tokenizer, max_len)
         tokens = {key: value.numpy().tolist() for key, value in tokens.items()}
@@ -186,8 +190,8 @@ async def predict_for_user(
         raise HTTPException(status_code=500, detail="Internal server error.")
 
 
-@router.post("/quick-recommendation", response_model=PredictionResponse, responses={
-    200: {"model": PredictionResponse, "description": "Successful response with recommendations."},
+@router.post("/quick-recommendation", response_model=QuickPredictionResponse, responses={
+    200: {"model": QuickPredictionResponse, "description": "Successful response with recommendations."},
     400: {"model": ErrorResponse, "description": "Bad request. Invalid input."},
     500: {"model": ErrorResponse, "description": "Internal server error."}
 })

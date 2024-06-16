@@ -196,6 +196,8 @@ werkzeug = "3.0.3"
 wrapt = "1.16.0"
 xt = "0.1.1"
 zipp = "3.19.2"
+pandas = "^2.2.2"
+openpyxl = "^3.1.4"
 
 
 [tool.poetry.group.dev.dependencies]

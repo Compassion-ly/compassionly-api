@@ -370,6 +370,7 @@ class MajorDetail(BaseModel):
     major: Major | None = None
     courses: List[Course] | None = None
     prospects: List[FutureProspect] | None = None
+    colleges: Optional[List[College]] = None
 
 
 class CourseDetail(BaseModel):
@@ -413,9 +414,13 @@ class MajorResponseModel(BaseModel):
     message: str
     data: Major
 
+class CollegeDetailResponse(BaseModel):
+    college: College
+    majors: List[Major]
+
 class CollegeResponseModel(BaseModel):
     message: str
-    data: College
+    data: CollegeDetailResponse
 
 class CollegeDetailResponseModel(BaseModel):
     message: str
