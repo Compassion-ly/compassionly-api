@@ -34,7 +34,7 @@ async def login_access_token(requestToken: RequestToken, session: SessionDep) ->
         decoded_token = auth.verify_id_token(requestToken.token)
         uid = decoded_token['uid']
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Firebase ID token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail= f"Invalid Firebase ID token, {e}")
 
     # START user check tambahan apabila dibutuhkan
 

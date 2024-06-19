@@ -174,6 +174,9 @@ async def predict_for_user(
 
         # Fetch major details from the database
         major_details = []
+        # only get 5 recommendations
+        recommendations = recommendations[:5]
+
         for major_name in recommendations:
             statement = select(Major).where(Major.major_name == major_name)
             major = session.exec(statement).first()
